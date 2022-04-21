@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -x
 
+sudo apt install -yq moreutils
+
+az feature register --namespace Microsoft.ContainerService --name HTTPProxyConfigPreview
+
 NEWGRP="ace-$(cat /dev/urandom | tr -dc 'a-z' | fold -w 8 | head -n 1)"
 GROUP="${GROUP:=$NEWGRP}"
 LOCATION="eastus"
@@ -84,7 +88,7 @@ az vm create \
     --resource-group=${GROUP} \
     --name=cli-proxy-vm \
     --image Canonical:0001-com-ubuntu-server-focal:20_04-lts:latest \
-    --ssh-key-values @/home/azureuser/.ssh/id_rsa.pub \
+    --ssh-key-values @/home/$(whoami)/.ssh/id_rsa.pub \
     --public-ip-address "" \
     --custom-data ./setup_out.sh \
     --vnet-name=${GROUP}-vnet \
@@ -93,7 +97,7 @@ az vm create \
 
 az aks create --resource-group=$GROUP --name=$GROUP \
     --http-proxy-config=httpproxyconfig.json \
-    --ssh-key-value @/home/azureuser/.ssh/id_rsa.pub \
+    --ssh-key-value @/home/$(whoami)/.ssh/id_rsa.pub \
     --enable-managed-identity \
     --assign-identity $identity_id \
     --yes \
